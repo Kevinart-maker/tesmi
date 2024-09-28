@@ -16,6 +16,9 @@ const Navbar = () => {
             return savedCart ? JSON.parse(savedCart) : [];
         });
 
+        console.log('cart: ', cart)
+        console.log('cart-length: ', cart.length)
+
     const handleNav = () => {
         setNav(!nav)
     }
@@ -92,9 +95,10 @@ const Navbar = () => {
                     }
                 </li>
                 <SearchBar />
-                <li>Home</li>
-                <li>Product</li>
-                <li>Pricing</li>
+                <li><NavLink to='/productlist'>Shop</NavLink></li>
+                <li onClick={()=> handleFilters('women')}>Womens</li>
+                <li onClick={()=> handleFilters('men')}>Mens</li>
+                <li onClick={()=> handleBestFilters('bestseller')}>Best Seller</li>
                 <li>Contact</li>         
             </div>
         </nav>

@@ -5,8 +5,6 @@ import { useAuthContext } from '../hooks/useAuthContext';
 import PaystackPop from '@paystack/inline-js'
 
 const CheckoutForm = () => {
-    const [paymentReference, setPaymentReference] = useState('');
-    const [paymentStatus, setPaymentStatus] = useState('');
     const { user } = useAuthContext();
     const navigate = useNavigate();
 
@@ -36,20 +34,57 @@ const CheckoutForm = () => {
     );
     const totalAmount = subtotal + formData.shippingCost
 
-    const handlePayment = async() =>{
-        const paymentResponse = await axios.post('https://backend-tesmi.vercel.app/checkout/pay', {
-            email: formData.email,
-            totalAmount: totalAmount,
-            orderId: orderId,
-        });
+    const handlePayment = async (mail, amount, order) => {
+        console.log('Payment data:\nEmail: ', mail, 'Order ID: ', order, 'Total amount: ', amount);
+    
+        try {
+            const response = await fetch('https://backend-tesmi.vercel.app/checkout/pay', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderId: order,
+                    email: mail,
+                    totalAmount: amount,
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.message} ${response.statusText}`);
+            }
+    
+            const paymentJson = await response.json();
+            console.log('Payment data:', paymentJson);
 
-        const paymentJson = paymentResponse.data
+            
+            // const popup = new PaystackPop();
+            // popup.resumeTransaction(paymentJson.access_code);
+            // Use Paystack inline to open the payment popup
+            const handler = PaystackPop.setup({
+                key: 'pk_test_f9f7ce87205e570cc61c87806e4c0e1a57668324',  // Replace with your Paystack public key
+                email: mail,
+                amount: amount * 100,  // Paystack expects the amount in kobo
+                ref: paymentJson.paymentReference,  // Use the payment reference from your backend
+                onClose: () => {
+                    alert('Transaction was not completed, window closed.');
+                },
+                callback: function (response) {
+                    // Handle the payment verification on successful transaction
+                    alert('Payment completed! Reference: ' + response.reference);
 
-        console.log('payment data: ', paymentJson)
+                    // Optionally, you can call your backend to verify the payment here
+                    navigate('/payment-success');  // Redirect user to success page
+                },
+            });
 
-        const popup = new PaystackPop()
-        popup.resumeTransaction(paymentJson.access_code)
-    }
+        handler.openIframe(); 
+    
+        } catch (err) {
+            console.error('Error: ', err);
+        }
+    };
+    
 
     useEffect(() => {
         // Calculate subtotal based on cart items
@@ -98,7 +133,7 @@ const CheckoutForm = () => {
             console.log('order id: ', orderId)
             setMsg(message)
             alert(message);
-
+            handlePayment(formData.email, totalAmount, orderId)
             
         } catch (err) {
             console.log(

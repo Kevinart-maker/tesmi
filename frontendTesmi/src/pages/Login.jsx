@@ -62,8 +62,8 @@ const Login = () => {
                                 value={password}
                             />
                         </label>
-                        <button onClick={handleSubmit}>Continue</button>
-                    </div>
+                        <button onClick={handleSubmit}>{loading ? 'loading..' : 'Continue'}</button>
+                        </div>
                     {error && (<div className="error-msg">{error}</div>)}
                 </div>
                 <div className={`signup ${visible} ${seeSuccess}`}>
@@ -105,7 +105,7 @@ const Login = () => {
                                 value={password}
                             />
                         </label>
-                        <button onClick={handleSignUp}>Continue</button>
+                        <button onClick={handleSignUp}>{loading ? 'loading..' : 'Continue'}</button>
                     </div>
                     {signupError && (<div className="error-msg">{signupError}</div>)}
                 </div>
